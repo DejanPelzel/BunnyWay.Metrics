@@ -136,7 +136,7 @@ namespace BunnyWay.Metrics
         /// <param name="metricName">The name of the metrics that we are tracking</param>
         /// <param name="value">The value of the metrics that we are tracking</param>
         /// <param name="tags">(Optional) The tags of the metric that will be sent</param>
-        public void TrackMetric(string metricName, long value, params DataTag[] tags)
+        public void TrackMetric(string metricName, long value, params Tag[] tags)
         {
             try
             {

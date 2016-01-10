@@ -87,7 +87,7 @@ namespace BunnyWay.Metrics.InfluxDB
         /// Create a new service request for the 
         /// </summary>
         /// <returns></returns>
-        private HttpWebRequest GetServiceRequest()
+        public HttpWebRequest GetServiceRequest()
         {
             var request = HttpWebRequest.CreateHttp($"{this.Client.ServerUrl}write?db={Uri.EscapeDataString(this.Client.DatabaseName)}{this.Client.UrlAuthenticationString}");
             request.Method = "POST";

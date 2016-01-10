@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataTag.cs" />
+    <Compile Include="Tag.cs" />
     <Compile Include="InfluxDB\InfluxDBLineClient.cs" />
     <Compile Include="InfluxDB\InfluxDBWriter.cs" />
     <Compile Include="MetricsTracker.cs" />

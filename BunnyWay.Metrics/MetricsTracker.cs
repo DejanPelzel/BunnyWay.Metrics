@@ -42,11 +42,17 @@ namespace BunnyWay.Metrics
         public static MetricsTracker Default { get; private set; }
 
         /// <summary>
+        /// The list of collectors that will be called just before sending the data
+        /// </summary>
+        public List<IMetricCollector> MetricCollectors { get; private set; }
+
+        /// <summary>
         /// Create and start a new metric tracker with the given period in seconds
         /// </summary>
         /// <param name="dataInterval"></param>
-        public MetricsTracker(int dataInterval = 60, InfluxDBLineClient influxDbClient = null)
+        public MetricsTracker(int dataInterval = 10, InfluxDBLineClient influxDbClient = null)
         {
+            this.MetricCollectors = new List<IMetricCollector>();
             this._Metrics = new Dictionary<string, double>();
             this.DataInterval = dataInterval;
             this._Timer = new Timer(this.TimerCallback, null, dataInterval * 1000, dataInterval * 1000);
@@ -77,7 +83,26 @@ namespace BunnyWay.Metrics
         /// <param name="stateInfo"></param>
         private void TimerCallback(Object stateInfo)
         {
+            // Call the collectors
+            foreach(var collector in this.MetricCollectors)
+            {
+                var metrics = collector.GetMetrics();
+                foreach (var metric in metrics)
+                {
+                    this.TrackMetric(metric.MetricName, metric.Value, metric.Tags);
+                }
+            }
 
+            // Don't send empty requests
+            lock(this._Metrics)
+            {
+                if(this._Metrics.Count == 0)
+                {
+                    return;
+                }
+            }
+
+            // TODO: Should this be reused?
             Dictionary<string, double> metricsToSend = new Dictionary<string, double>();
 
             try
@@ -94,6 +119,8 @@ namespace BunnyWay.Metrics
                         metricsToSend.Add(key, value);
                         this._Metrics[key] = 0;
                     }
+
+                    this._Metrics.Clear();
                 }
             }
             catch { }
@@ -105,7 +132,8 @@ namespace BunnyWay.Metrics
                 {
                     using (var writer = this.InfluxDBClient.OpenWriter())
                     {
-                        foreach (var keyValue in metricsToSend) {
+                        foreach (var keyValue in metricsToSend)
+                        {
                             writer.WriteDataPoint(keyValue.Key, keyValue.Value);
                         }
                     }
@@ -115,35 +143,22 @@ namespace BunnyWay.Metrics
         }
 
         /// <summary>
-        /// Remove the metric from the tracker
-        /// </summary>
-        /// <param name="metric"></param>
-        public void RemoveMetric(string metric)
-        {
-            lock (this._Metrics)
-            {
-                try
-                {
-                    this._Metrics.Remove(metric);
-                }
-                catch { }
-            }
-        }
-
-        /// <summary>
         /// Fire the event, incremeneing the metric value
         /// </summary>
         /// <param name="metricName">The name of the metrics that we are tracking</param>
         /// <param name="value">The value of the metrics that we are tracking</param>
         /// <param name="tags">(Optional) The tags of the metric that will be sent</param>
-        public void TrackMetric(string metricName, long value, params Tag[] tags)
+        public void TrackMetric(string metricName, double value = 1, params Tag[] tags)
         {
             try
             {
                 // Apply tags
                 if (tags != null)
                 {
-                    metricName += " " + tags.ToString();
+                    foreach(var tag in tags)
+                    {
+                        metricName += "," + tag.ToString();
+                    }
                 }
 
                 lock (this._Metrics)
@@ -164,9 +179,12 @@ namespace BunnyWay.Metrics
         /// <summary>
         /// Initialize the default metrics tracker with config loaded from the config file
         /// </summary>
-        public static void InitializeDefault(int dataInterval = 60, InfluxDBLineClient influxDbClient = null)
+        public static void InitializeDefault(int dataInterval = 10, InfluxDBLineClient influxDbClient = null)
         {
-            MetricsTracker.Default = new MetricsTracker(dataInterval, influxDbClient);
+            if (MetricsTracker.Default == null)
+            {
+                MetricsTracker.Default = new MetricsTracker(dataInterval, influxDbClient);
+            }
         }
     }
 }

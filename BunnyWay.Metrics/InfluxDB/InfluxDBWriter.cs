@@ -63,6 +63,7 @@ namespace BunnyWay.Metrics.InfluxDB
             this._StringBuilder.Append(key);
             this._StringBuilder.Append(" value=");
             this._StringBuilder.Append(value.ToString());
+            this._StringBuilder.Append("\n");
 
             // Write the data string
             var dataByteLength = Encoding.UTF8.GetBytes(this._StringBuilder.ToString(), 0, this._StringBuilder.Length, this._Buffer, 0);
@@ -79,7 +80,7 @@ namespace BunnyWay.Metrics.InfluxDB
 
             if (this._HttpRequest != null)
             {
-                this._HttpRequest.GetResponse();
+                this._HttpRequest.GetResponse().Close();
             }
         }
 
@@ -91,6 +92,7 @@ namespace BunnyWay.Metrics.InfluxDB
         {
             var request = HttpWebRequest.CreateHttp($"{this.Client.ServerUrl}write?db={Uri.EscapeDataString(this.Client.DatabaseName)}{this.Client.UrlAuthenticationString}");
             request.Method = "POST";
+            request.KeepAlive = true;
             return request;
         }
     }

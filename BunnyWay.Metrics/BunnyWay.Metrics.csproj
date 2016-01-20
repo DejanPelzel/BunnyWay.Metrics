@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Metric.cs" />
+    <Compile Include="IMetricCollector.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="InfluxDB\InfluxDBLineClient.cs" />
     <Compile Include="InfluxDB\InfluxDBWriter.cs" />

@@ -16,7 +16,7 @@ It requires minimum configuration and is super easy to get started. The simplest
 ### How to use
 Tracking metrics and counters is easy
 ```C#
-// Track a counter metric
+// Track a counter metric, it will simply be incremented by 1
 MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
 
 // Track a metric
@@ -29,7 +29,7 @@ MetricsTracker.Default.TrackMetric(
     new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
 
 // Simple way to track timing, just make sure that the object returned by 
-//MetricsTracker.Default.TrackTimeMetric is disposed when the tracker should be stopped
+// MetricsTracker.Default.TrackTimeMetric is disposed when the tracker should be stopped
 using (var timer = MetricsTracker.Default.TrackTimeMetric("WebApp.PasswordGeneration.Time"))
 {
     Thread.Sleep(1000);

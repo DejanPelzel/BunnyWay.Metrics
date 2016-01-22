@@ -2,7 +2,7 @@
 BunnyWay.Metrics is a high performance .NET metrics tracker library that automatically sends data directly into InfluxDB 0.9.x.
 
 
-## Configuration
+### Configuration
 It requires minimum configuration and is super easy to get started. The simplest way is to simply add the following settings into your app config file:
 ```xml
 <appSettings>

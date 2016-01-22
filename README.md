@@ -18,21 +18,16 @@ Tracking metrics and counters is easy
 ```C#
 // Track a counter metric
 MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
-```
 
-```C#
 // Track a metric
 MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230);
-```
 
-```C#
 // Track with tags
 MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230, new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
-```
 
-```C#
 // Simple way to track timing
 using (var timer = MetricsTracker.Default.TrackTimeMetric("WebApp.PasswordGeneration.Time"))
 {
     Thread.Sleep(1000);
-}```
+}
+```

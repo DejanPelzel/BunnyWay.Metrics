@@ -14,17 +14,21 @@ namespace BunnyWay.Metrics.Example
         {
             MetricsTracker.InitializeDefault();
 
-            Task.Run(() =>
+            // Track a counter metric
+            MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
+
+            // Track a metric
+            MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230);
+
+            // Track with tags
+            MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230, new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
+
+            // Simple way to track timing
+            using (var timer = MetricsTracker.Default.TrackTimeMetric("WebApp.PasswordGeneration.Time"))
             {
-                var tags = new Tag[] { new Tag("EdgeServerId", "7") };
-                var random = new Random();
-                while (true)
-                {
-                    MetricsTracker.Default.TrackMetric("EdgeServer.RequestsServed", 2, tags);
-                    Thread.Sleep(1000);
-                }
-            });
-            
+                Thread.Sleep(1000);
+            }
+
             Console.ReadLine();
         }
     }

@@ -177,6 +177,27 @@ namespace BunnyWay.Metrics
         }
 
         /// <summary>
+        /// Start tracking a new TimeMetricTracker. When the object is disposed it will be registered as a metric
+        /// </summary>
+        /// <param name="metricName"></param>
+        public TimeMetricTracker TrackTimeMetric(string metricName, params Tag[] tags)
+        {
+            var tracker = new TimeMetricTracker(metricName);
+            tracker.MetricTracked += HandleTimeTrackerMetricCallback;
+            return tracker;
+        }
+
+        /// <summary>
+        /// Handle the time tracker metric callback and register the results
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleTimeTrackerMetricCallback(TimeMetricTracker sender, MetricTrackedEventArgs e)
+        {
+            this.TrackMetric(e.MetricName, e.MetricValue, e.Tags);
+        }
+
+        /// <summary>
         /// Initialize the default metrics tracker with config loaded from the config file
         /// </summary>
         public static void InitializeDefault(int dataInterval = 10, InfluxDBLineClient influxDbClient = null)

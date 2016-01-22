@@ -23,9 +23,13 @@ MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
 MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230);
 
 // Track with tags
-MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230, new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
+MetricsTracker.Default.TrackMetric(
+    "WebApp.ImageProcessing.QueueLength", 
+    230, 
+    new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
 
-// Simple way to track timing, just make sure that the object returned by MetricsTracker.Default.TrackTimeMetric is disposed when the //tracker should be stopped
+// Simple way to track timing, just make sure that the object returned by 
+//MetricsTracker.Default.TrackTimeMetric is disposed when the tracker should be stopped
 using (var timer = MetricsTracker.Default.TrackTimeMetric("WebApp.PasswordGeneration.Time"))
 {
     Thread.Sleep(1000);

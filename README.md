@@ -16,6 +16,9 @@ It requires minimum configuration and is super easy to get started. The simplest
 ### How to use
 Tracking metrics and counters is easy
 ```C#
+// Initializes the MetricsTracker.Default object
+MetricsTracker.InitializeDefault();
+
 // Track a counter metric, it will simply be incremented by 1
 MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
 

@@ -27,9 +27,14 @@ namespace BunnyWay.Metrics
         private Timer _Timer;
 
         /// <summary>
-        /// The trackers
+        /// The working metrics dictionary
         /// </summary>
-        private Dictionary<string, double> _Metrics = null;
+        private Dictionary<string, List<double>> _Metrics = null;
+
+        /// <summary>
+        /// The working counters dictionary
+        /// </summary>
+        private Dictionary<string, double> _Counters = null;
 
         /// <summary>
         /// The client that will be used for sending the statistics to InfluxDB
@@ -53,7 +58,8 @@ namespace BunnyWay.Metrics
         public MetricsTracker(int dataInterval = 10, InfluxDBLineClient influxDbClient = null)
         {
             this.MetricCollectors = new List<IMetricCollector>();
-            this._Metrics = new Dictionary<string, double>();
+            this._Metrics = new Dictionary<string, List<double>>();
+            this._Counters = new Dictionary<string, double>();
             this.DataInterval = dataInterval;
             this._Timer = new Timer(this.TimerCallback, null, dataInterval * 1000, dataInterval * 1000);
 
@@ -103,7 +109,8 @@ namespace BunnyWay.Metrics
             }
 
             // TODO: Should this be reused?
-            Dictionary<string, double> metricsToSend = new Dictionary<string, double>();
+            Dictionary<string, List<double>> metricsToSend = new Dictionary<string, List<double>>();
+            Dictionary<string, double> countersToSend = new Dictionary<string, double>();
 
             try
             {
@@ -117,10 +124,23 @@ namespace BunnyWay.Metrics
                         var value = this._Metrics[key];
 
                         metricsToSend.Add(key, value);
-                        this._Metrics[key] = 0;
                     }
 
                     this._Metrics.Clear();
+                }
+
+                lock (this._Counters)
+                {
+                    var keys = this._Counters.Keys.ToList();
+                    for (int i = 0; i < keys.Count; i++)
+                    {
+                        var key = keys[i];
+                        var value = this._Counters[key];
+
+                        countersToSend.Add(key, value);
+                    }
+
+                    this._Counters.Clear();
                 }
             }
             catch { }
@@ -134,6 +154,14 @@ namespace BunnyWay.Metrics
                     {
                         foreach (var keyValue in metricsToSend)
                         {
+                            foreach (var metricValue in keyValue.Value)
+                            {
+                                writer.WriteDataPoint(keyValue.Key, metricValue);
+                            }
+                        }
+
+                        foreach (var keyValue in countersToSend)
+                        {
                             writer.WriteDataPoint(keyValue.Key, keyValue.Value);
                         }
                     }
@@ -143,12 +171,47 @@ namespace BunnyWay.Metrics
         }
 
         /// <summary>
+        /// Track a counter metric
+        /// </summary>
+        /// <param name="metricName">The name of the metrics that we are tracking</param>
+        /// <param name="value">The value of the metrics that we are tracking</param>
+        /// <param name="tags">(Optional) The tags of the metric that will be sent</param>
+        public void TrackCounter(string metricName, double increment = 1, params Tag[] tags)
+        {
+            try
+            {
+                // Apply tags
+                if (tags != null)
+                {
+                    foreach (var tag in tags)
+                    {
+                        metricName += "," + tag.ToString();
+                    }
+                }
+
+                lock (this._Counters)
+                {
+                    double currentValue = 0;
+                    try
+                    {
+                        currentValue = this._Counters[metricName];
+                    }
+                    catch
+                    { }
+
+                    this._Counters[metricName] = currentValue + increment;
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
         /// Fire the event, incremeneing the metric value
         /// </summary>
         /// <param name="metricName">The name of the metrics that we are tracking</param>
         /// <param name="value">The value of the metrics that we are tracking</param>
         /// <param name="tags">(Optional) The tags of the metric that will be sent</param>
-        public void TrackMetric(string metricName, double value = 1, params Tag[] tags)
+        public void TrackMetric(string metricName, double value, params Tag[] tags)
         {
             try
             {
@@ -163,14 +226,18 @@ namespace BunnyWay.Metrics
 
                 lock (this._Metrics)
                 {
-                    double currentValue = 0;
+                    List<double> currentList;
                     try
                     {
-                        currentValue = this._Metrics[metricName];
+                        currentList = this._Metrics[metricName];
                     }
-                    catch { }
+                    catch {
+                        // We do this instead of checking everytime for improving performance in looped calls
+                        currentList = new List<double>();
+                        this._Metrics[metricName] = currentList;
+                    }
 
-                    this._Metrics[metricName] = currentValue + value;
+                    currentList.Add(value);
                 }
             }
             catch { }

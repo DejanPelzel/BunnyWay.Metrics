@@ -14,6 +14,11 @@ namespace BunnyWay.Metrics.InfluxDB
     public class InfluxDBWriter : IDisposable
     {
         /// <summary>
+        /// The reusable unix epoch time
+        /// </summary>
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        /// <summary>
         /// 
         /// </summary>
         public InfluxDBLineClient Client { get; set; }
@@ -63,6 +68,8 @@ namespace BunnyWay.Metrics.InfluxDB
             this._StringBuilder.Append(key);
             this._StringBuilder.Append(" value=");
             this._StringBuilder.Append(value.ToString());
+            //this._StringBuilder.Append(' ');
+            //this._StringBuilder.Append((date - UnixEpoch).TotalMilliseconds * 1000);
             this._StringBuilder.Append("\n");
 
             // Write the data string

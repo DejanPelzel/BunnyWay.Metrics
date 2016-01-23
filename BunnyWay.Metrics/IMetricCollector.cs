@@ -16,5 +16,10 @@ namespace BunnyWay.Metrics
         /// </summary>
         /// <returns></returns>
         List<Metric> GetMetrics();
+
+        /// <summary>
+        /// Indicates weather the metric is a counter
+        /// </summary>
+        bool IsCounter { get; }
     }
 }

@@ -20,16 +20,16 @@ Tracking metrics and counters is easy
 MetricsTracker.InitializeDefault();
 
 // Track a counter metric, it will simply be incremented by 1
-MetricsTracker.Default.TrackMetric("WebApp.Login.FailedLoginAttempt");
+MetricsTracker.Default.TrackCounter("WebApp.Login.FailedLoginAttempt");
 
-// Track a metric
+// Track a counter metric, increment it by a set amount
+MetricsTracker.Default.TrackCounter("Server.RequestsServed", 20);
+
+// Track a metric, each of these is uniquely registered
 MetricsTracker.Default.TrackMetric("WebApp.ImageProcessing.QueueLength", 230);
 
-// Track with tags
-MetricsTracker.Default.TrackMetric(
-    "WebApp.ImageProcessing.QueueLength", 
-    230, 
-    new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
+// Track a metric with tags
+MetricsTracker.Default.TrackMetric("WebApp.EmailQueue.QueueLength", 230, new Tag("ServerName", "as1"), new Tag("ServerGroup", "2"));
 
 // Simple way to track timing, just make sure that the object returned by 
 // MetricsTracker.Default.TrackTimeMetric is disposed when the tracker should be stopped
